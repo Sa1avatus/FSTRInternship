@@ -1,7 +1,3 @@
-from django.shortcuts import render
-import json
-from django.http import HttpResponse
-from .models import *
 from .serializers import *
 from rest_framework import viewsets
 # Create your views here.

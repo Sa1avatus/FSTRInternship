@@ -10,11 +10,17 @@ class User(AbstractUser):
     phone = models.CharField(verbose_name='phone number', max_length=20, null=True, blank=True)
     email = models.EmailField(verbose_name='e-mail', unique=True, max_length=255)
 
+    def __str__(self):
+        return f'{self.first_name} {self.last_name}'
+
 
 class Cords(models.Model):
     latitude = models.FloatField()
     longitude = models.FloatField()
     height = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.latitude}, {self.longitude}: {self.height} meters'
 
 
 class Added(models.Model):
@@ -30,6 +36,9 @@ class Added(models.Model):
     spring = models.CharField(verbose_name='spring difficulty level', max_length=2, null=True, blank=True)
     summer = models.CharField(verbose_name='summer difficulty level', max_length=2, null=True, blank=True)
     autumn = models.CharField(verbose_name='autumn difficulty level', max_length=2, null=True, blank=True)
+
+    def __str__(self):
+        return f'{self.title}, {self.cords}: {self.status}'
 
 
 class Images(models.Model):
