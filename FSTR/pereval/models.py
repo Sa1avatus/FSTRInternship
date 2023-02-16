@@ -14,7 +14,7 @@ class User(AbstractUser):
 class Cords(models.Model):
     latitude = models.FloatField()
     longitude = models.FloatField()
-    height = models.IntegerField()
+    height = models.IntegerField(default=0)
 
 
 class Added(models.Model):
@@ -24,7 +24,7 @@ class Added(models.Model):
     title = models.CharField(max_length=255, null=False)
     other_titles = models.TextField()
     connects = models.CharField(verbose_name='pass connects', max_length=255)
-    cords = models.ForeignKey(Cords, on_delete=models.SET_NULL)
+    cords = models.ForeignKey(Cords, null=True, on_delete=models.SET_NULL)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default=STATUS_CHOICES[0])
     winter = models.CharField(verbose_name='winter difficulty level', max_length=2, null=True, blank=True)
     spring = models.CharField(verbose_name='spring difficulty level', max_length=2, null=True, blank=True)
@@ -34,6 +34,6 @@ class Added(models.Model):
 
 class Images(models.Model):
     date_added = models.DateTimeField(auto_now_add=True)
-    img = models.ImageField()
+    img = models.BinaryField(null=True)
     added = models.ForeignKey(Added, related_name='added_images', on_delete=models.CASCADE)
     title = models.CharField(max_length=255, null=True, blank=True)
