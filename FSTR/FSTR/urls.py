@@ -23,9 +23,13 @@ router.register(r'added', views.AddedViewset)
 router.register(r'user', views.UserViewset)
 router.register(r'cords', views.CordsViewset)
 router.register(r'images', views.ImagesViewset)
+added = views.AddedViewset.as_view({
+    'post': 'create'
+})
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    path('submitData', added, name='added'),
 ]
