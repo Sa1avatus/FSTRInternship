@@ -2,6 +2,7 @@ from .models import *
 from rest_framework import serializers
 from .exceptions import *
 from django.db.utils import OperationalError
+import base64
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -37,12 +38,12 @@ class CordsSerializer(serializers.ModelSerializer):
 
 
 class ImagesSerializer(serializers.ModelSerializer):
+    data = serializers.CharField(source='img')
     class Meta:
         model = Images
         fields = [
             'date_added',
-            'img',
-            'added',
+            'data',
             'title'
         ]
 
@@ -52,6 +53,8 @@ class AddedSerializer(serializers.ModelSerializer):
     coords = CordsSerializer(source='cords')
     user = UserSerializer()
     level = serializers.DictField(source='set_levels')
+    images = ImagesSerializer(source='added_images', many=True)
+
     class Meta:
         model = Added
         fields = [
@@ -69,15 +72,15 @@ class AddedSerializer(serializers.ModelSerializer):
            'summer',
            'autumn',
            'level',
+           'images',
             ]
 
     def create(self, request):
         cords = request.pop('cords')
         user = request.pop('user')
-        #images = request.pop('img')
+        images = request.pop('added_images')
         levels = request.pop('set_levels')
         try:
-            #user_instance, created = User.objects.get_or_create(**user)
             user_instance = User.objects.filter(email=user['email']).first()
             if not user_instance:
                 user_instance = User.objects.create(**user)
@@ -88,9 +91,12 @@ class AddedSerializer(serializers.ModelSerializer):
                 **request
             )
             pass_instance.set_levels(**levels)
-            # for image in images:
-            #     Images.objects.create(mpass=pass_instance, **image)
+            for image in images: #Временно закомментировано, так как нужно понять как исправить ошибку
+                # 'expected bytes-like object, not str'
+                #data = base64.encodebytes(image['img'])
+                data = image['img'].encode('utf-8')
+                #data = base64.b64encode(data)
+                #Images.objects.create(added=pass_instance, img=data, title=image['title'])
             return pass_instance
         except OperationalError:
             raise DBConnectException()
-
