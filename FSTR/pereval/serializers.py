@@ -100,4 +100,3 @@ class AddedSerializer(serializers.ModelSerializer):
             return pass_instance
         except OperationalError:
             raise DBConnectException()
-
