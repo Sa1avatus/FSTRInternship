@@ -15,8 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework import routers
+from rest_framework import routers, permissions
 from pereval import views
+from django.urls import path, include, re_path
+from django.views.generic import TemplateView
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
 
 router = routers.DefaultRouter()
 router.register(r'added', views.AddedViewset)
@@ -26,10 +31,29 @@ router.register(r'images', views.ImagesViewset)
 added = views.AddedViewset.as_view({
     'post': 'create'
 })
+added_detail = views.AddedViewset.as_view({
+    'get': 'retrieve',
+    'patch': 'update',
+})
+added_list = views.AddedViewset.as_view({
+    'get': 'list',
+})
 
 urlpatterns = [
+
     path('admin/', admin.site.urls),
     path('', include(router.urls)),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('submitData', added, name='added'),
+    path('submitData/<int:pk>', added_detail, name='added-detail'),
+    path('submitData/', added_list, name='added-list'),
+    # path('swagger-ui/', views.schema_view),
+    # path('redoc/', TemplateView.as_view(
+    #     template_name='redoc.html',
+    #     extra_context={'schema_url': 'openapi-schema'}
+    # ), name='redoc'),
+    re_path(r'^swagger(\?P\.json|\.yaml)$', views.schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('swagger/', views.schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    path('redoc/', views.schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
+
 ]

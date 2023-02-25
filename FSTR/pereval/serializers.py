@@ -2,6 +2,7 @@ from .models import *
 from rest_framework import serializers
 from .exceptions import *
 from django.db.utils import OperationalError
+from rest_framework.exceptions import NotFound
 import base64
 
 
@@ -74,6 +75,10 @@ class AddedSerializer(serializers.ModelSerializer):
            'level',
            'images',
             ]
+        read_only_fields = [
+            'id',
+            'status',
+        ]
 
     def create(self, request):
         cords = request.pop('cords')
@@ -98,5 +103,31 @@ class AddedSerializer(serializers.ModelSerializer):
                 #data = base64.b64encode(data)
                 #Images.objects.create(added=pass_instance, img=data, title=image['title'])
             return pass_instance
+        except OperationalError:
+            raise DBConnectException()
+
+    def retrieve(self, request, *args, **kwargs):
+        try:
+            if not Added.objects.filter(id=kwargs['pk']).exists():
+                raise NotFound
+            return super().retrieve(request, *args, **kwargs)
+        except OperationalError:
+            raise DBConnectException()
+
+    def update(self, request, *args, **kwargs):
+        try:
+            queryset = Added.objects.filter(id=kwargs['pk'])
+            if not queryset.exists():
+                raise NotFound
+            query_object = queryset.first()
+            if not query_object.status == 'new':
+                raise ObjectStatusException
+            response = super().partial_update(request, *args, **kwargs)
+            response.data = {
+                'status': response.status_code,
+                'message': response.status_text,
+                'state': 1,
+            }
+            return response
         except OperationalError:
             raise DBConnectException()
