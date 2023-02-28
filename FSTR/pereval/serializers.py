@@ -70,10 +70,10 @@ class AddedSerializer(WritableNestedModelSerializer, serializers.ModelSerializer
            'connect',
            'coords',
            #'status',
-           'winter',
-           'spring',
-           'summer',
-           'autumn',
+           #'winter',
+           #'spring',
+           #'summer',
+           #'autumn',
            'level',
            'images',
             ]
@@ -87,7 +87,7 @@ class AddedSerializer(WritableNestedModelSerializer, serializers.ModelSerializer
         cords = request.pop('cords')
         user = request.pop('user')
         images = request.pop('added_images')
-        levels = request.pop('set_levels')
+        levels = request.pop('get_levels')
         try:
             user_instance = User.objects.filter(email=user['email']).first()
             if not user_instance:
@@ -121,7 +121,7 @@ class AddedSerializer(WritableNestedModelSerializer, serializers.ModelSerializer
         pk = request.id
         coords = instance.pop('coords', None)
         user = instance.pop('user', None)
-        levels = instance.pop('set_levels', None)
+        levels = instance.pop('get_levels', None)
         images = instance.pop('added_images', None)
         try:
             queryset = Added.objects.filter(id=pk)
@@ -143,7 +143,8 @@ class AddedSerializer(WritableNestedModelSerializer, serializers.ModelSerializer
             if images:
                 Images.objects.filter(added=request).delete()
                 for image in images:
-                    Images.objects.create(added=request, **image)
+                    data = image['img'].encode('utf-8')
+                    Images.objects.create(added=request, img=data, title=image['title'])
             return super().update(request, instance)
         except OperationalError:
             raise DBConnectException()
