@@ -14,20 +14,10 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path, include
-from rest_framework import routers, permissions
 from pereval import views
 from django.urls import path, include, re_path
-from django.views.generic import TemplateView
-from drf_yasg.views import get_schema_view
-from drf_yasg import openapi
 
 
-router = routers.DefaultRouter()
-router.register(r'added', views.AddedViewset)
-router.register(r'user', views.UserViewset)
-router.register(r'cords', views.CordsViewset)
-router.register(r'images', views.ImagesViewset)
 added = views.AddedViewset.as_view({
     'post': 'create'
 })
@@ -42,7 +32,7 @@ added_list = views.AddedViewset.as_view({
 urlpatterns = [
 
     path('admin/', admin.site.urls),
-    path('', include(router.urls)),
+    path('', added, name='added'),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('submitData', added, name='added'),
     path('submitData/<int:pk>', added_detail, name='added-detail'),

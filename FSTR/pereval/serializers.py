@@ -7,6 +7,7 @@ import base64
 from django.forms import model_to_dict
 from drf_writable_nested import WritableNestedModelSerializer
 
+
 class UserSerializer(serializers.ModelSerializer):
     fam = serializers.CharField(source='last_name', label='Surname', allow_blank=True)
     otc = serializers.CharField(source='patronymic_name', label='Patronymic', allow_blank=True)
@@ -98,12 +99,11 @@ class AddedSerializer(WritableNestedModelSerializer, serializers.ModelSerializer
                 **request
             )
             pass_instance.set_levels(**levels)
-            for image in images:  # Временно закомментировано, так как нужно понять как исправить ошибку
-                # 'expected bytes-like object, not str'
+            for image in images:
                 # data = base64.encodebytes(image['img'])
                 data = image['img'].encode('utf-8')
                 # data = base64.b64encode(data)
-                # Images.objects.create(added=pass_instance, img=data, title=image['title'])
+                Images.objects.create(added=pass_instance, img=data, title=image['title'])
             return pass_instance
         except OperationalError:
             raise DBConnectException()
