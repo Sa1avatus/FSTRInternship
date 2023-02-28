@@ -53,6 +53,14 @@ class Added(models.Model):
         self.autumn = kwargs.get('autumn', '')
         self.save()
 
+    def get_levels(self):
+        dict_levels = {}
+        dict_levels['winter'] = self.winter
+        dict_levels['spring'] = self.spring
+        dict_levels['summer'] = self.summer
+        dict_levels['autumn'] = self.autumn
+        return dict_levels
+
 
 class Images(models.Model):
     date_added = models.DateTimeField(auto_now_add=True)

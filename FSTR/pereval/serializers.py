@@ -8,7 +8,7 @@ from django.forms import model_to_dict
 from drf_writable_nested import WritableNestedModelSerializer
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(WritableNestedModelSerializer, serializers.ModelSerializer):
     fam = serializers.CharField(source='last_name', label='Surname', allow_blank=True)
     otc = serializers.CharField(source='patronymic_name', label='Patronymic', allow_blank=True)
     name = serializers.CharField(source='first_name', label='Name', allow_blank=True)
@@ -28,7 +28,7 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
 
-class CordsSerializer(serializers.ModelSerializer):
+class CordsSerializer(WritableNestedModelSerializer, serializers.ModelSerializer):
 
     class Meta:
         model = Cords
@@ -40,7 +40,7 @@ class CordsSerializer(serializers.ModelSerializer):
         ]
 
 
-class ImagesSerializer(serializers.ModelSerializer):
+class ImagesSerializer(WritableNestedModelSerializer, serializers.ModelSerializer):
     data = serializers.CharField(source='img')
     class Meta:
         model = Images
@@ -55,7 +55,7 @@ class AddedSerializer(WritableNestedModelSerializer, serializers.ModelSerializer
     connect = serializers.CharField(source='connects', label='Connects', allow_blank=True)
     coords = CordsSerializer(source='cords')
     user = UserSerializer()
-    level = serializers.DictField(source='set_levels')
+    level = serializers.DictField(source='get_levels')
     images = ImagesSerializer(source='added_images', many=True)
 
     class Meta:
@@ -77,11 +77,11 @@ class AddedSerializer(WritableNestedModelSerializer, serializers.ModelSerializer
            'level',
            'images',
             ]
-        # read_only_fields = [
-        #     'id',
-        #     'status',
+        read_only_fields = [
+             'id',
+             'status',
         #     'user'
-        # ]
+         ]
 
     def create(self, request):
         cords = request.pop('cords')
@@ -121,8 +121,8 @@ class AddedSerializer(WritableNestedModelSerializer, serializers.ModelSerializer
         pk = request.id
         coords = instance.pop('coords', None)
         user = instance.pop('user', None)
-        levels = instance.pop('get_levels', None)
-        images = instance.pop('mpass_images', None)
+        levels = instance.pop('set_levels', None)
+        images = instance.pop('added_images', None)
         try:
             queryset = Added.objects.filter(id=pk)
             if not queryset.exists():
