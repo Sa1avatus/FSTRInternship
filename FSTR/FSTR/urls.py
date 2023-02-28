@@ -47,11 +47,6 @@ urlpatterns = [
     path('submitData', added, name='added'),
     path('submitData/<int:pk>', added_detail, name='added-detail'),
     path('submitData/', added_list, name='added-list'),
-    # path('swagger-ui/', views.schema_view),
-    # path('redoc/', TemplateView.as_view(
-    #     template_name='redoc.html',
-    #     extra_context={'schema_url': 'openapi-schema'}
-    # ), name='redoc'),
     re_path(r'^swagger(\?P\.json|\.yaml)$', views.schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', views.schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', views.schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),

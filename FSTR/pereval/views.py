@@ -30,11 +30,6 @@ class ImagesViewset(viewsets.ModelViewSet):
    serializer_class = ImagesSerializer
 
 
-# @api_view()
-# @renderer_classes([OpenAPIRenderer, SwaggerUIRenderer])
-# def schema_view(request):
-#     generator = schemas.SchemaGenerator(title='Bookings API')
-#     return response.Response(generator.get_schema(request=request))
 schema_view = get_schema_view(
    openapi.Info(
       title="Snippets API",
