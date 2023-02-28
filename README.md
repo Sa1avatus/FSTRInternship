@@ -39,6 +39,7 @@
    ```bash
    $ python manage.py runserver 
    ```
+[Техническое задание](https://github.com/Sa1avatus/FSTRInternship/blob/main/Read.md)
 
 Доступ к порталу будет по ссылке [http://localhost:8000](http://localhost:8000)
 
