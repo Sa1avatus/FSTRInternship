@@ -2,8 +2,10 @@ from .models import *
 from rest_framework import serializers
 from .exceptions import *
 from django.db.utils import OperationalError
+from rest_framework.exceptions import NotFound
 import base64
-
+from django.forms import model_to_dict
+from drf_writable_nested import WritableNestedModelSerializer
 
 class UserSerializer(serializers.ModelSerializer):
     fam = serializers.CharField(source='last_name', label='Surname', allow_blank=True)
@@ -13,7 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            'id',
+            #'id',
             'name',
             'fam',
             'otc',
@@ -30,7 +32,7 @@ class CordsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cords
         fields = [
-            'id',
+            #'id',
             'latitude',
             'longitude',
             'height'
@@ -42,13 +44,13 @@ class ImagesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Images
         fields = [
-            'date_added',
+            #'date_added',
             'data',
             'title'
         ]
 
 
-class AddedSerializer(serializers.ModelSerializer):
+class AddedSerializer(WritableNestedModelSerializer, serializers.ModelSerializer):
     connect = serializers.CharField(source='connects', label='Connects', allow_blank=True)
     coords = CordsSerializer(source='cords')
     user = UserSerializer()
@@ -58,15 +60,15 @@ class AddedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Added
         fields = [
-           'id',
-           'date_added',
+           #'id',
+           #'date_added',
            'user',
            'beauty_title',
            'title',
            'other_titles',
            'connect',
            'coords',
-           'status',
+           #'status',
            'winter',
            'spring',
            'summer',
@@ -74,6 +76,11 @@ class AddedSerializer(serializers.ModelSerializer):
            'level',
            'images',
             ]
+        # read_only_fields = [
+        #     'id',
+        #     'status',
+        #     'user'
+        # ]
 
     def create(self, request):
         cords = request.pop('cords')
@@ -91,12 +98,52 @@ class AddedSerializer(serializers.ModelSerializer):
                 **request
             )
             pass_instance.set_levels(**levels)
-            for image in images: #Временно закомментировано, так как нужно понять как исправить ошибку
+            for image in images:  # Временно закомментировано, так как нужно понять как исправить ошибку
                 # 'expected bytes-like object, not str'
-                #data = base64.encodebytes(image['img'])
+                # data = base64.encodebytes(image['img'])
                 data = image['img'].encode('utf-8')
-                #data = base64.b64encode(data)
-                #Images.objects.create(added=pass_instance, img=data, title=image['title'])
+                # data = base64.b64encode(data)
+                # Images.objects.create(added=pass_instance, img=data, title=image['title'])
             return pass_instance
+        except OperationalError:
+            raise DBConnectException()
+
+    def retrieve(self, request):
+        pk = request.pop('id')
+        try:
+            if not Added.objects.filter(id=pk).exists():
+                raise NotFound
+            return super().retrieve(request)
+        except OperationalError:
+            raise DBConnectException()
+
+    def update(self, request, instance):
+        pk = request.id
+        coords = instance.pop('coords', None)
+        user = instance.pop('user', None)
+        levels = instance.pop('get_levels', None)
+        images = instance.pop('mpass_images', None)
+        try:
+            queryset = Added.objects.filter(id=pk)
+            if not queryset.exists():
+                raise NotFound
+            query_object = queryset.first()
+            if not query_object.status == "('new', 'new')":
+                raise ObjectStatusException
+            if coords:
+                coords_fields = model_to_dict(request.cords)
+                coords_fields = coords_fields | coords
+                coords_fields.pop('id', None)
+                coords_instance, created = Cords.objects.get_or_create(**coords_fields)
+                request.cords = coords_instance
+            if levels:
+                levels_fields = request.get_levels()
+                levels_fields = levels_fields | levels
+                request.set_levels(**levels_fields)
+            if images:
+                Images.objects.filter(added=request).delete()
+                for image in images:
+                    Images.objects.create(added=request, **image)
+            return super().update(request, instance)
         except OperationalError:
             raise DBConnectException()
