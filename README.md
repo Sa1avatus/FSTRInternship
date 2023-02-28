@@ -1,5 +1,5 @@
 # Проект виртуальной стажировки ФСТР 
- 
+  [Техническое задание](https://github.com/Sa1avatus/FSTRInternship/blob/main/Read.md)
 ## Установка
 
 
